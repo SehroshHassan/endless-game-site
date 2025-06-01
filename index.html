@@ -1,10 +1,99 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>My Endless Game</title>
+  <meta charset="UTF-8">
+  <title>Endless Box Runner</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #111;
+      color: white;
+      font-family: sans-serif;
+      text-align: center;
+    }
+    canvas {
+      display: block;
+      margin: auto;
+      background: #222;
+      border: 2px solid #fff;
+    }
+  </style>
 </head>
 <body>
-  <h1>Welcome to My Endless Game</h1>
-  <p>The game will go here soon. Stay tuned!</p>
+  <h1>Endless Box Runner</h1>
+  <canvas id="gameCanvas" width="600" height="300"></canvas>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let box = { x: 50, y: 240, width: 30, height: 30, dy: 0, jumping: false };
+    let gravity = 1;
+    let obstacles = [];
+    let frame = 0;
+    let score = 0;
+
+    document.addEventListener("keydown", () => {
+      if (!box.jumping) {
+        box.dy = -15;
+        box.jumping = true;
+      }
+    });
+
+    function update() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Box physics
+      box.y += box.dy;
+      box.dy += gravity;
+      if (box.y >= 240) {
+        box.y = 240;
+        box.dy = 0;
+        box.jumping = false;
+      }
+
+      // Draw box
+      ctx.fillStyle = "lime";
+      ctx.fillRect(box.x, box.y, box.width, box.height);
+
+      // Obstacles
+      if (frame % 100 === 0) {
+        let h = 30 + Math.random() * 20;
+        obstacles.push({ x: 600, y: 270 - h, width: 20, height: h });
+      }
+      for (let i = 0; i < obstacles.length; i++) {
+        let obs = obstacles[i];
+        obs.x -= 4;
+        ctx.fillStyle = "red";
+        ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+
+        // Collision detection
+        if (
+          box.x < obs.x + obs.width &&
+          box.x + box.width > obs.x &&
+          box.y < obs.y + obs.height &&
+          box.y + box.height > obs.y
+        ) {
+          alert("Game Over! Your score: " + score);
+          document.location.reload();
+        }
+      }
+
+      // Remove off-screen obstacles
+      obstacles = obstacles.filter(obs => obs.x + obs.width > 0);
+
+      // Score
+      score++;
+      ctx.fillStyle = "white";
+      ctx.font = "18px sans-serif";
+      ctx.fillText("Score: " + score, 10, 20);
+
+      frame++;
+      requestAnimationFrame(update);
+    }
+
+    update();
+  </script>
 </body>
 </html>
